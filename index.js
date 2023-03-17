@@ -1,7 +1,7 @@
 const inquirer = require('inquirer');
-const cTable = require('console.table');
+// const cTable = require('console.table');
 
-const db = require('./db')
+// const db = require('./db')
 
 
 const menuPrompt = [
@@ -34,12 +34,12 @@ const plusDepartment = [
 const createRole = [
     {
         type: "input",
-        name: "title",
+        name: "role_title",
         message: "What is the name of the new role?"
     },
     {
         type: "number",
-        name: "salary",
+        name: "role_salary",
         message: "What is the salary for this role?"
     },
     {
