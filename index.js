@@ -1,23 +1,47 @@
 const inquirer = require('inquirer');
-// const cTable = require('console.table');
+const cTable = require('console.table');
 
-// const db = require('./db')
+const empDB = require('./db/query')
 
 
 const menuPrompt = [
     {
         type: "list",
         name: "menuOpt",
-        message: "Would you like to add another employee to your team?",
+        message: "What would you like to do?",
         choices: [
-            "View All Departments",
-            "View All Roles",
-            "View All Employees",
-            "Add Department",
-            "Add Role",
-            "Add Employee",
-            "Update Employee Role",
-            "Finish"
+            {
+                name:"View All Departments",
+                value: 1
+            },
+            {
+                name: "View All Roles",
+                value: 2
+            },
+            {
+                name: "View All Employees",
+                value: 3
+            },
+            {
+                name: "Add Department",
+                value: 4
+            },
+            {
+                name: "Add Role",
+                value: 5
+            },
+            {
+                name: "Add Employee",
+                value: 6
+            },
+            {
+                name: "Update Employee Role",
+                value: 7
+            },
+            {
+                name: "Finish",
+                value: 8
+            }
         ]
     }
 ];
@@ -89,44 +113,55 @@ const updateEmpRole = [
 
 function initPrompt() { 
     
-    teamMenu = () => {
+    navMenu = () => {
         inquirer.prompt(menuPrompt)
         .then(answer => {
             let choice = answer.choice
             switch(choice) {
-                case "View All Departments":
+                case 1:
                     viewDepartments()
                     break;
-                case "View All Roles":
+                case 2:
                     viewRoles();
                     break;
-                case "View All Employees":
+                case 3:
                     viewEmployees();
                     break;
-                case "Add Department":
+                case 4:
                     addDepartment();
                     break;
-                case "Add Role":
+                case 5:
                     addRole();
                     break;
-                case "Add Employee":
+                case 6:
                     addEmployee()
                     break;
-                case "Update Employee Role":
+                case 7:
                     updateEmployeeRole();
                     break;
                 default:
-                    //exit application
+                    //8 = exit application
             }
         })
     }
-
-    //call team menu as first prompt
-    teamMenu()
+    // call nav menu on start
+    navMenu()
+    // var values = [
+    //     ['max', 20],
+    //     ['joe', 30]
+    // ];
+    // console.table('table name', [values]);
 
     // WHEN I choose to view all departments
     function viewDepartments() {
         // THEN I am presented with a formatted table showing department names and department ids
+        empDB.allDepartments().then(([rows]) => {
+            
+            cTable.getTable([rows]);
+            
+        }).then(() => {
+            navMenu()
+        })
     } 
 
     // WHEN I choose to view all roles
