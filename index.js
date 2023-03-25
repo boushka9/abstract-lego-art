@@ -1,7 +1,7 @@
 const inquirer = require('inquirer');
-const cTable = require('console.table');
+require("console.table");
 
-const empDB = require('./db/query')
+const emDb = require('./db/query')
 
 
 const menuPrompt = [
@@ -46,7 +46,7 @@ const menuPrompt = [
     }
 ];
 
-const plusDepartment = [
+const createDepartment = [
     {
         type: "input",
         name: "newDep",
@@ -70,7 +70,7 @@ const createRole = [
         type: "list",
         name: "department_id",
         message: "Which department does this role belong to?",
-        choices: allDepartments // to connect list of all departments from db
+        choices: emDb.allDepartments() // to connect list of all departments from db
     }
 ];
 
@@ -98,26 +98,26 @@ const createEmployee = [
 ];
 
 const updateEmpRole = [
-    {
-        type: "list",
-        name: "selectEmp",
-        choices: allEmployees // to connect list of all employees from db
-    },
-    {
-        type: "list",
-        name: "newRole",
-        choices: allRoles, // connect list of all roles from db
-    }
+    // {
+    //     type: "list",
+    //     name: "selectEmp",
+    //     choices: //allEmployees // to connect list of all employees from db
+    // },
+    // {
+    //     type: "list",
+    //     name: "newRole",
+    //     choices: //allRoles, // connect list of all roles from db
+    // }
 ];
 
 
-function initPrompt() { 
-    
-    navMenu = () => {
-        inquirer.prompt(menuPrompt)
+function firstPrompt() {
+
+  navMenu = () => {
+    inquirer.prompt(menuPrompt)
         .then(answer => {
-            let choice = answer.choice
-            switch(choice) {
+            
+            switch(answer.menuOpt) {
                 case 1:
                     viewDepartments()
                     break;
@@ -139,13 +139,16 @@ function initPrompt() {
                 case 7:
                     updateEmployeeRole();
                     break;
-                default:
-                    //8 = exit application
+                case 8: //8 = exit application
+                  emDb.connection.end();
+                  break;
             }
         })
-    }
+      }
+
     // call nav menu on start
     navMenu()
+   
     // var values = [
     //     ['max', 20],
     //     ['joe', 30]
@@ -155,9 +158,10 @@ function initPrompt() {
     // WHEN I choose to view all departments
     function viewDepartments() {
         // THEN I am presented with a formatted table showing department names and department ids
-        empDB.allDepartments().then(([rows]) => {
-            
-            cTable.getTable([rows]);
+        emDb.allDepartments().then(([rows]) => {
+          // console.log(rows)
+           let departments = rows;
+            console.table('Departments', departments);
             
         }).then(() => {
             navMenu()
@@ -167,20 +171,38 @@ function initPrompt() {
     // WHEN I choose to view all roles
     function viewRoles() {
         // THEN I am presented with the job title, role id, the department that role belongs to, and the salary for that role
+
+        emDb.allRoles().then(([rows]) => {
+          let roles = rows;
+          console.table('Roles', roles);
+        }).then(() => {
+          navMenu()
+      })
     }
 
     // WHEN I choose to view all employees
     function viewEmployees() {
         // THEN I am presented with a formatted table showing employee data, including employee ids, first names, last names, job titles, departments, salaries, and managers that the employees report to
+        emDb.allEmployees().then(([rows]) => {
+          let employees = rows;
+          console.table('Employees', employees);
+        }).then(() => {
+          navMenu()
+      })
     }
 
     // WHEN I choose to add a department
     function addDepartment() {
         // THEN I am prompted to enter the name of the department
-        inquirer.prompt(plusDepartment)
-        .then((answers) => {
-
-        })  
+        inquirer.prompt(createDepartment)
+        .then((answer) => {
+          let name = answer.newDep;
+          emDb.insertDepartment(name);
+          console.log(`'${name}' added to department database`)
+        })
+        .then(() => {
+          navMenu()
+      })
     }
 
     // WHEN I choose to add a role
@@ -197,6 +219,14 @@ function initPrompt() {
         // THEN I am prompted to enter the employee’s first name, last name, role, and manager
         inquirer.prompt(createEmployee)
         .then((answers) => {
+          // let first_name =
+          // let last_name =
+
+      //  emDb.allRoles().then(([rows]) => {
+      //     let roles = rows;
+      //     console.table('Roles', roles);
+      //   }) 
+      //    inquirer.prompt(newEmployeeRole)
 
         }) 
     }
@@ -213,4 +243,4 @@ function initPrompt() {
 }
 
 //call prompts to start
-initPrompt();
+firstPrompt()
