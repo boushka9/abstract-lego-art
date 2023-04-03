@@ -47,32 +47,69 @@ class EmployeeDataBase {
         )
     }
 
-
-    insertDepartment(name) {
+    allManagers() {
         return this.connection.promise().query(
-            `INSERT INTO department (name) VALUES (?);`, name
+            `SELECT
+            employee.id, 
+            CONCAT(first_name, ' ', last_name) manager 
+            FROM employee WHERE (id IN (SELECT manager_id FROM employee));`
         )
     }
 
-    insertRole() {
+    employeesByDepartment() {
         return this.connection.promise().query(
-            `INSERT INTO role (title, salary, department_id) 
-            VALUES (?);`
+            `SELECT`
         )
     }
 
-    insertEmployee() {
+    insertDepartment(newDepartment) {
         return this.connection.promise().query(
-            `INSERT INTO employee (first_name, last_name, role_id, manager_id)
-             VALUES (?);`
+            `INSERT INTO department (name) VALUES (?);`, newDepartment
         )
     }
 
-    updateEmployeeRole() {
+    insertRole(newRole) {
+        //Pass in title, salary, and dep._id from prompt
         return this.connection.promise().query(
-            `UPDATE employee SET role_id = ? WHERE id = ?;`
+            `INSERT INTO role SET ?;`, newRole
         )
     }
+
+    insertEmployee(newEmployee) {
+        return this.connection.promise().query(
+            `INSERT INTO employee SET ?;`, newEmployee
+        )
+    }
+
+    updateEmployeeRole(employee_id, role_id) {
+        return this.connection.promise().query(
+            `UPDATE employee SET role_id = ? WHERE id = ?;`, [employee_id, role_id]
+        )
+    }
+
+    deleteDepartment() {
+        return this.connection.promise().query(
+            ``
+        )
+    }
+
+    deleteRole(){
+        return this.connection.promise().query(
+            ``
+        )
+    }
+
+    deleteEmployee(){
+        return this.connection.promise().query()
+    }
+
+    budgetByDepartment() {
+        return this.connection.promise().query(
+            ``
+        )
+    }
+
+ 
 }
 
 module.exports = new EmployeeDataBase(connection);

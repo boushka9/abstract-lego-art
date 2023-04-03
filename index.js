@@ -55,47 +55,37 @@ const createDepartment = [
     }
 ];
 
-const createRole = [
-    {
-        type: "input",
-        name: "role_title",
-        message: "What is the name of the new role?"
-    },
-    {
-        type: "number",
-        name: "role_salary",
-        message: "What is the salary for this role?"
-    },
-    {
-        type: "list",
-        name: "department_id",
-        message: "Which department does this role belong to?",
-        choices: emDb.allDepartments() // to connect list of all departments from db
-    }
-];
+// const createRole = [
+//     {
+//         type: "input",
+//         name: "role_title",
+//         message: "What is the name of the new role?"
+//     },
+//     {
+//         type: "number",
+//         name: "role_salary",
+//         message: "What is the salary for this role?"
+//     },
+//     {
+//         type: "list",
+//         name: "department_id",
+//         message: "Which department does this role belong to?",
+//         choices: listDepartments// to connect list of all departments from db
+//     }
+// ];
 
-const createEmployee = [
-    {
-        type: "input",
-        name: "empFName",
-        message: "What is the employees first name?"
-    },
-    {
-        type: "input",
-        name: "empLName",
-        message: "What is the employees last name?"
-    },
-    {
-        type: "input",
-        name: "empRole",
-        message: "What is the employees role?"
-    },
-    {
-        type: "input",
-        name: "empManager",
-        message: "Who is the employees manager?"
-    }
-];
+// const createEmployee2 = [
+//     {
+//         type: "input",
+//         name: "empRole",
+//         message: "What is the employees role?"
+//     },
+//     {
+//         type: "input",
+//         name: "empManager",
+//         message: "Who is the employees manager?"
+//     }
+// ]
 
 const updateEmpRole = [
     // {
@@ -163,9 +153,7 @@ function firstPrompt() {
            let departments = rows;
             console.table('Departments', departments);
             
-        }).then(() => {
-            navMenu()
-        })
+        }).then(() => navMenu())
     } 
 
     // WHEN I choose to view all roles
@@ -175,9 +163,7 @@ function firstPrompt() {
         emDb.allRoles().then(([rows]) => {
           let roles = rows;
           console.table('Roles', roles);
-        }).then(() => {
-          navMenu()
-      })
+        }).then(() => navMenu())
     }
 
     // WHEN I choose to view all employees
@@ -186,9 +172,7 @@ function firstPrompt() {
         emDb.allEmployees().then(([rows]) => {
           let employees = rows;
           console.table('Employees', employees);
-        }).then(() => {
-          navMenu()
-      })
+        }).then(() => navMenu())
     }
 
     // WHEN I choose to add a department
@@ -200,36 +184,134 @@ function firstPrompt() {
           emDb.insertDepartment(name);
           console.log(`'${name}' added to department database`)
         })
-        .then(() => {
-          navMenu()
-      })
+        .then(() => navMenu())
     }
 
     // WHEN I choose to add a role
     function addRole() {
-        // THEN I am prompted to enter the name, salary, and department for the role 
-        inquirer.prompt(createRole)
-        .then((answers) => {
+        emDb.allDepartments().then(([rows]) => {
+             let departments = rows;
+               
+             // User will select dep. by name, but will pass in the id for the querey
+             const listDepartments = departments.map(({id, name}) => ({
+                name: name,
+                value: id
+             }));
 
+             inquirer.prompt([
+                {
+                    type: "input",
+                    name: "title",
+                    message: "What is the name of the new role?"
+                },
+                {
+                    type: "number",
+                    name: "salary",
+                    message: "What is the salary for this role?"
+                },
+                {
+                    type: "list",
+                    name: "department_id",
+                    message: "Which department does this role belong to?",
+                    choices: listDepartments// to connect list of all departments from db
+                }
+            ])
+             .then((answer) => {
+                console.log(answer)
+                emDb.insertRole(answer)
+                .then(() => console.log(`${answer.title} added to role database`))
+             })
+             .then(() => navMenu())
+              
+          })
+              
+    }
+
+    
+    function addEmployee() {
+        
+        inquirer.prompt([    
+        {
+            type: "input",
+            name: "first_name",
+            message: "What is the employees first name?"
+        },
+        {
+            type: "input",
+            name: "last_name",
+            message: "What is the employees last name?"
+        }])
+        .then((answer) => {
+          let firstName = answer.first_name;
+          let lastName = answer.last_name;
+
+            emDb.allRoles().then(([rows]) => {
+                let roles = rows;
+
+                // User selects role by name, and the corresponding role id = value for query
+                const listRoles = roles.map(({id, title}) => ({
+                    name: title,
+                    value: id
+                }))
+
+                    inquirer.prompt([{
+                            type: "list",
+                            name: "title",
+                            message: "What is the employees role?",
+                            choices: listRoles
+                        }])
+                        .then((answer) => {
+                            let roleId = answer.title;
+                        
+                            emDb.allEmployees().then(([rows]) => {
+                              let managers = rows;
+                            
+                              const listManagers = managers.map(({id, first_name, last_name}) => ({
+                                name: `${first_name} ${last_name}`,
+                                value: id
+                              }))
+                          
+                              listManagers.unshift({ name: "None", value: null });
+                          
+                              inquirer.prompt([
+                                {
+                                  type: "list",
+                                  name: "manager_id",
+                                  message: "What is the employees manager?",
+                                  choices: listManagers
+                                }
+                              ])
+                                .then((answer) => {
+                                    let managerId = answer.manager_id;
+                            
+                                    let newEmployee = 
+                                    ({
+                                      first_name: firstName,
+                                      last_name: lastName,
+                                      role_id: roleId,
+                                      manager_id: managerId
+                                    })
+                                    
+                                    emDb.insertEmployee(newEmployee)
+                                    //Currently inserting 0 and null for values even thought 
+                                    console.log(newEmployee)
+                                    console.log(`${firstName} ${lastName} has been add to the employee database.`)
+                                }).then(() => navMenu())
+                            })
+                            
+                        
+                        
+                        
+                          //Add new employee to db
+                            //   emDb.insertEmployee(newEmployee)
+                            //   //Verify to user action completed
+                            //   console.log(`${firstName} ${lastName} has been add to the employee database.`)
+                        })
+                    
+            })  
         })  
     }
 
-    // WHEN I choose to add an employee
-    function addEmployee() {
-        // THEN I am prompted to enter the employee’s first name, last name, role, and manager
-        inquirer.prompt(createEmployee)
-        .then((answers) => {
-          // let first_name =
-          // let last_name =
-
-      //  emDb.allRoles().then(([rows]) => {
-      //     let roles = rows;
-      //     console.table('Roles', roles);
-      //   }) 
-      //    inquirer.prompt(newEmployeeRole)
-
-        }) 
-    }
 
     // WHEN I choose to update an employee role
     function updateEmployeeRole() {
