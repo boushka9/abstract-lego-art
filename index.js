@@ -56,18 +56,7 @@ const createDepartment = [
 ];
 
 
-const updateEmpRole = [
-    // {
-    //     type: "list",
-    //     name: "selectEmp",
-    //     choices: //allEmployees // to connect list of all employees from db
-    // },
-    // {
-    //     type: "list",
-    //     name: "newRole",
-    //     choices: //allRoles, // connect list of all roles from db
-    // }
-];
+
 
 
 function firstPrompt() {
@@ -158,7 +147,7 @@ function firstPrompt() {
              inquirer.prompt([
                 {
                     type: "input",
-                    name: "title",
+                    name: "role_id",
                     message: "What is the name of the new role?"
                 },
                 {
@@ -175,7 +164,7 @@ function firstPrompt() {
             ])
              .then((answer) => {
                 emDb.insertRole(answer)
-                .then(() => console.log(`${answer.title} added to role database`))
+                .then(() => console.log(`${answer.role_id} added to role database`))
              })
              .then(() => navMenu())
               
@@ -202,19 +191,19 @@ function firstPrompt() {
             emDb.allRoles().then(([rows]) => {
                 let roles = rows;
                 // User selects role by name, and the corresponding role id = value for query
-                const listRoles = roles.map(({id, title}) => ({
-                    name: title,
+                const listRoles = roles.map(({id, role_id}) => ({
+                    name: role_id,
                     value: id
                 }))
                 
                     inquirer.prompt([{
                             type: "list",
-                            name: "title",
+                            name: "role_id",
                             message: "What is the employees role?",
                             choices: listRoles
                         }])
                         .then((answer) => {
-                            let roleId = answer.title;
+                            let roleId = answer.role_id;
                         
                             emDb.allEmployees().then(([rows]) => {
                               let managers = rows;
@@ -255,13 +244,54 @@ function firstPrompt() {
     }
 
 
-    // WHEN I choose to update an employee role
     function updateEmployeeRole() {
-        // THEN I am prompted to select an employee to update and their new role
-        inquirer.prompt(updateEmpRole)
-        .then((answers) => {
 
-        }) 
+        emDb.allEmployees().then(([rows]) => {
+            let employees = rows;
+
+            // User Selects employee by name and the id is passed in as the value
+            const listEmployees = employees.map(({id, first_name, last_name}) => ({
+                name: `${first_name} ${last_name}`,
+                value: id
+            }))
+
+            inquirer.prompt([
+                {
+                    type: "list",
+                    name: "employee",
+                    choices: listEmployees
+                }
+            ])
+            .then((answer) => {
+                let employee_id = answer.employee;
+
+                emDb.allRoles().then(([rows]) => {
+                    let roles = rows;
+
+                    // From roles, display role name to user and pass in value id 
+                    const listRoles = roles.map(({id, title}) => ({
+                        name: title,
+                        value: id
+                    })) 
+                    inquirer.prompt([{
+                        type: "list",
+                        name: "role_id",
+                        message: "What is the employees updated role?",
+                        choices: listRoles
+                    }])
+                    .then((answer) => {
+                        // Role title correspondes to role_id
+                        let newRole = answer.role_id;
+
+                        // Pass new role id, and employee id into query
+                        emDb.updateEmployeeRole(newRole, employee_id)
+
+                        console.log(`Employee Roles has been successfully updated`)
+                    })
+                    .then(() => navMenu())
+                })
+            }) 
+        })  
     }
 
 }

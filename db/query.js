@@ -81,9 +81,10 @@ class EmployeeDataBase {
         )
     }
 
-    updateEmployeeRole(employee_id, role_id) {
+    // Update the role_id where the employee id = inserted id#
+    updateEmployeeRole(role_id, employee_id) {
         return this.connection.promise().query(
-            `UPDATE employee SET role_id = ? WHERE id = ?;`, [employee_id, role_id]
+            `UPDATE employee SET role_id = ? WHERE id = ?;`, [role_id, employee_id]
         )
     }
 
