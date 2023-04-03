@@ -55,37 +55,6 @@ const createDepartment = [
     }
 ];
 
-// const createRole = [
-//     {
-//         type: "input",
-//         name: "role_title",
-//         message: "What is the name of the new role?"
-//     },
-//     {
-//         type: "number",
-//         name: "role_salary",
-//         message: "What is the salary for this role?"
-//     },
-//     {
-//         type: "list",
-//         name: "department_id",
-//         message: "Which department does this role belong to?",
-//         choices: listDepartments// to connect list of all departments from db
-//     }
-// ];
-
-// const createEmployee2 = [
-//     {
-//         type: "input",
-//         name: "empRole",
-//         message: "What is the employees role?"
-//     },
-//     {
-//         type: "input",
-//         name: "empManager",
-//         message: "Who is the employees manager?"
-//     }
-// ]
 
 const updateEmpRole = [
     // {
@@ -139,45 +108,35 @@ function firstPrompt() {
     // call nav menu on start
     navMenu()
    
-    // var values = [
-    //     ['max', 20],
-    //     ['joe', 30]
-    // ];
-    // console.table('table name', [values]);
-
-    // WHEN I choose to view all departments
     function viewDepartments() {
-        // THEN I am presented with a formatted table showing department names and department ids
+        // Display rows of departments in db
         emDb.allDepartments().then(([rows]) => {
-          // console.log(rows)
+          // Pass in departments, label the table 'Departments'
            let departments = rows;
             console.table('Departments', departments);
             
         }).then(() => navMenu())
     } 
 
-    // WHEN I choose to view all roles
     function viewRoles() {
-        // THEN I am presented with the job title, role id, the department that role belongs to, and the salary for that role
-
+        // Display rows of roles in db
         emDb.allRoles().then(([rows]) => {
+          // Pass in roles and label table 'Roles'   
           let roles = rows;
           console.table('Roles', roles);
         }).then(() => navMenu())
     }
 
-    // WHEN I choose to view all employees
     function viewEmployees() {
-        // THEN I am presented with a formatted table showing employee data, including employee ids, first names, last names, job titles, departments, salaries, and managers that the employees report to
+        // Pass in employees and label table 'Employees'
         emDb.allEmployees().then(([rows]) => {
           let employees = rows;
           console.table('Employees', employees);
         }).then(() => navMenu())
     }
 
-    // WHEN I choose to add a department
     function addDepartment() {
-        // THEN I am prompted to enter the name of the department
+        // Add New departemnt name and pass it into INSERT query
         inquirer.prompt(createDepartment)
         .then((answer) => {
           let name = answer.newDep;
@@ -187,11 +146,9 @@ function firstPrompt() {
         .then(() => navMenu())
     }
 
-    // WHEN I choose to add a role
     function addRole() {
         emDb.allDepartments().then(([rows]) => {
              let departments = rows;
-               
              // User will select dep. by name, but will pass in the id for the querey
              const listDepartments = departments.map(({id, name}) => ({
                 name: name,
@@ -217,16 +174,13 @@ function firstPrompt() {
                 }
             ])
              .then((answer) => {
-                console.log(answer)
                 emDb.insertRole(answer)
                 .then(() => console.log(`${answer.title} added to role database`))
              })
              .then(() => navMenu())
               
-          })
-              
+          })   
     }
-
     
     function addEmployee() {
         
@@ -247,13 +201,12 @@ function firstPrompt() {
 
             emDb.allRoles().then(([rows]) => {
                 let roles = rows;
-
                 // User selects role by name, and the corresponding role id = value for query
                 const listRoles = roles.map(({id, title}) => ({
                     name: title,
                     value: id
                 }))
-
+                
                     inquirer.prompt([{
                             type: "list",
                             name: "title",
@@ -271,8 +224,6 @@ function firstPrompt() {
                                 value: id
                               }))
                           
-                              listManagers.unshift({ name: "None", value: null });
-                          
                               inquirer.prompt([
                                 {
                                   type: "list",
@@ -284,6 +235,7 @@ function firstPrompt() {
                                 .then((answer) => {
                                     let managerId = answer.manager_id;
                             
+                                    // Set values to be passed into INSERT employee query
                                     let newEmployee = 
                                     ({
                                       first_name: firstName,
@@ -293,21 +245,11 @@ function firstPrompt() {
                                     })
                                     
                                     emDb.insertEmployee(newEmployee)
-                                    //Currently inserting 0 and null for values even thought 
-                                    console.log(newEmployee)
+
                                     console.log(`${firstName} ${lastName} has been add to the employee database.`)
                                 }).then(() => navMenu())
                             })
-                            
-                        
-                        
-                        
-                          //Add new employee to db
-                            //   emDb.insertEmployee(newEmployee)
-                            //   //Verify to user action completed
-                            //   console.log(`${firstName} ${lastName} has been add to the employee database.`)
-                        })
-                    
+                        })     
             })  
         })  
     }
