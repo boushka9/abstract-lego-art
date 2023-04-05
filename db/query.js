@@ -1,13 +1,14 @@
 // Import connection to database
 const connection = require('./connection')
 
-// Class constructore to export SQL query functions
+// Class constructor to export SQL query functions
 class EmployeeDataBase {
 
     constructor(connection) {
         this.connection = connection
     }
    
+    //Return dep ID & name to display to user
     allDepartments() {
         return this.connection.promise().query(
             `SELECT 
@@ -47,6 +48,7 @@ class EmployeeDataBase {
         )
     }
 
+    // Use sub query to select the manager_id from employee and display that employees first/last name AS manager
     allManagers() {
         return this.connection.promise().query(
             `SELECT
@@ -56,58 +58,66 @@ class EmployeeDataBase {
         )
     }
 
-    employeesByDepartment() {
-        return this.connection.promise().query(
-            `SELECT`
-        )
-    }
 
+    // Pass in new dep. name
     insertDepartment(newDepartment) {
         return this.connection.promise().query(
             `INSERT INTO department (name) VALUES (?);`, newDepartment
         )
     }
 
+    //Pass in title, salary, and dep._id from prompt
     insertRole(newRole) {
-        //Pass in title, salary, and dep._id from prompt
         return this.connection.promise().query(
             `INSERT INTO role SET ?;`, newRole
         )
     }
 
+    //Pass in first/last name, role, and manager from prompt
     insertEmployee(newEmployee) {
         return this.connection.promise().query(
             `INSERT INTO employee SET ?;`, newEmployee
         )
     }
 
-    updateEmployeeRole(employee_id, role_id) {
+    // Update role_id where the employee id = inserted id#
+    updateEmployeeRole(role_id, employee_id) {
         return this.connection.promise().query(
-            `UPDATE employee SET role_id = ? WHERE id = ?;`, [employee_id, role_id]
+            `UPDATE employee SET role_id = ? WHERE id = ?;`, [role_id, employee_id]
         )
     }
 
-    deleteDepartment() {
-        return this.connection.promise().query(
-            ``
-        )
-    }
+    //FUTURE DEVELOPMENT:
 
-    deleteRole(){
-        return this.connection.promise().query(
-            ``
-        )
-    }
+    // employeesByDepartment() {
+    //     return this.connection.promise().query(
+    //         `SELECT`
+    //     )
+    // }
+    
+    // deleteDepartment() {
+    //     return this.connection.promise().query(
+    //         `DELETE FROM table_name WHERE condition;`
+    //     )
+    // }
 
-    deleteEmployee(){
-        return this.connection.promise().query()
-    }
+    // deleteRole(){
+    //     return this.connection.promise().query(
+    //         `DELETE FROM table_name WHERE condition;`
+    //     )
+    // }
 
-    budgetByDepartment() {
-        return this.connection.promise().query(
-            ``
-        )
-    }
+    // deleteEmployee(){
+    //     return this.connection.promise().query(
+    //         `DELETE FROM table_name WHERE condition;`
+    //     )
+    // }
+
+    // budgetByDepartment() {
+    //     return this.connection.promise().query(
+    //         ``
+    //     )
+    // }
 
  
 }
