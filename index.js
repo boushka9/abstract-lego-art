@@ -3,7 +3,7 @@ require("console.table");
 
 const emDb = require('./db/query')
 
-
+// # value for each choice for switch case
 const menuPrompt = [
     {
         type: "list",
@@ -46,16 +46,14 @@ const menuPrompt = [
     }
 ];
 
+//Get name value for new dep
 const createDepartment = [
     {
         type: "input",
         name: "newDep",
         message: "What is the name of the new department?"
-
     }
 ];
-
-
 
 
 
@@ -64,7 +62,7 @@ function firstPrompt() {
   navMenu = () => {
     inquirer.prompt(menuPrompt)
         .then(answer => {
-            
+            // Based on value of menu options, respond with corresponding function
             switch(answer.menuOpt) {
                 case 1:
                     viewDepartments()
@@ -104,7 +102,7 @@ function firstPrompt() {
            let departments = rows;
             console.table('Departments', departments);
             
-        }).then(() => navMenu())
+        }).then(() => navMenu()) // @ End of each function, show user the menu options again
     } 
 
     function viewRoles() {
@@ -125,7 +123,7 @@ function firstPrompt() {
     }
 
     function addDepartment() {
-        // Add New departemnt name and pass it into INSERT query
+        // Add New department name and pass it into INSERT query
         inquirer.prompt(createDepartment)
         .then((answer) => {
           let name = answer.newDep;
@@ -138,7 +136,7 @@ function firstPrompt() {
     function addRole() {
         emDb.allDepartments().then(([rows]) => {
              let departments = rows;
-             // User will select dep. by name, but will pass in the id for the querey
+             // User will select dep. by name, but will pass in the role id for the query
              const listDepartments = departments.map(({id, name}) => ({
                 name: name,
                 value: id
@@ -147,13 +145,20 @@ function firstPrompt() {
              inquirer.prompt([
                 {
                     type: "input",
-                    name: "role_id",
+                    name: "title",
                     message: "What is the name of the new role?"
                 },
                 {
-                    type: "number",
+                    type: "input",
                     name: "salary",
-                    message: "What is the salary for this role?"
+                    message: "What is the salary for this role?",
+                    validate: (answer) => {
+                        //If input includes anything other than a #, do not accept and alert error
+                        if (isNaN(answer)) {
+                            return "Do not include '$' or ',' in salary input"
+                        }
+                        return true;
+                    }
                 },
                 {
                     type: "list",
@@ -163,8 +168,9 @@ function firstPrompt() {
                 }
             ])
              .then((answer) => {
+                //pass answers into INSERT query for roles
                 emDb.insertRole(answer)
-                .then(() => console.log(`${answer.role_id} added to role database`))
+                .then(() => console.log(`${answer.title} added to role database`))
              })
              .then(() => navMenu())
               
@@ -189,57 +195,58 @@ function firstPrompt() {
           let lastName = answer.last_name;
 
             emDb.allRoles().then(([rows]) => {
+                //display roles as rows with console.table
                 let roles = rows;
                 // User selects role by name, and the corresponding role id = value for query
-                const listRoles = roles.map(({id, role_id}) => ({
-                    name: role_id,
+                const listRoles = roles.map(({id, title}) => ({
+                    name: title,
                     value: id
                 }))
                 
-                    inquirer.prompt([{
-                            type: "list",
-                            name: "role_id",
-                            message: "What is the employees role?",
-                            choices: listRoles
-                        }])
-                        .then((answer) => {
-                            let roleId = answer.role_id;
+                inquirer.prompt([{
+                        type: "list",
+                        name: "role_id",
+                        message: "What is the employees role?",
+                        choices: listRoles
+                    }])
+                    .then((answer) => {
+                        let roleId = answer.role_id;
+                    
+                        emDb.allEmployees().then(([rows]) => {
+                          let managers = rows;
                         
-                            emDb.allEmployees().then(([rows]) => {
-                              let managers = rows;
-                            
-                              const listManagers = managers.map(({id, first_name, last_name}) => ({
-                                name: `${first_name} ${last_name}`,
-                                value: id
-                              }))
+                          // .map to display the first and last names of each employee and return the employee ID to set them as a manager
+                          const listManagers = managers.map(({id, first_name, last_name}) => ({
+                            name: `${first_name} ${last_name}`,
+                            value: id
+                          }))
                           
-                              inquirer.prompt([
-                                {
-                                  type: "list",
-                                  name: "manager_id",
-                                  message: "What is the employees manager?",
-                                  choices: listManagers
-                                }
-                              ])
-                                .then((answer) => {
-                                    let managerId = answer.manager_id;
-                            
-                                    // Set values to be passed into INSERT employee query
-                                    let newEmployee = 
-                                    ({
-                                      first_name: firstName,
-                                      last_name: lastName,
-                                      role_id: roleId,
-                                      manager_id: managerId
-                                    })
-                                    
-                                    emDb.insertEmployee(newEmployee)
-
-                                    console.log(`${firstName} ${lastName} has been add to the employee database.`)
-                                }).then(() => navMenu())
-                            })
-                        })     
-            })  
+                          inquirer.prompt([
+                            {
+                              type: "list",
+                              name: "manager_id",
+                              message: "Who is the employees manager?",
+                              choices: listManagers
+                            }
+                          ])
+                            .then((answer) => {
+                                let managerId = answer.manager_id;
+                        
+                                // Set values to be passed into INSERT employee query
+                                let newEmployee = 
+                                ({
+                                  first_name: firstName,
+                                  last_name: lastName,
+                                  role_id: roleId,
+                                  manager_id: managerId
+                                })
+                                
+                                emDb.insertEmployee(newEmployee)
+                                console.log(`${firstName} ${lastName} has been add to the employee database.`)
+                            }).then(() => navMenu())
+                        })
+                    })     
+            }) 
         })  
     }
 
@@ -249,7 +256,7 @@ function firstPrompt() {
         emDb.allEmployees().then(([rows]) => {
             let employees = rows;
 
-            // User Selects employee by name and the id is passed in as the value
+            // User Selects employee by name and their id is passed in as the value
             const listEmployees = employees.map(({id, first_name, last_name}) => ({
                 name: `${first_name} ${last_name}`,
                 value: id
@@ -280,7 +287,7 @@ function firstPrompt() {
                         choices: listRoles
                     }])
                     .then((answer) => {
-                        // Role title correspondes to role_id
+                        // Role title corresponds to role_id
                         let newRole = answer.role_id;
 
                         // Pass new role id, and employee id into query
